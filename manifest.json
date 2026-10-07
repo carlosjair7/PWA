@@ -2,7 +2,7 @@
   "name": "DevConnect - Red Social",
   "short_name": "DevConnect",
   "description": "La red social exclusiva para desarrolladores de la clase.",
-  "start_url": "./",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#f3f4f6",
   "theme_color": "#2563eb",
