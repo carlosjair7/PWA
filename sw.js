@@ -1,6 +1,6 @@
 // sw.js - Service Worker Completo con Precaché e Intercepción Fetch
 
-const CACHE_NAME = 'devconnect-shell-v1';
+const CACHE_NAME = 'devconnect-shell-v3';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
