@@ -1,46 +1,71 @@
-// js/app.js - Renderizado Dinámico de Contenido (CSR)
 
-// Simulación de datos dinámicos (en futuras clases vendrán de IndexedDB o una API REST)
-const postsDeEjemplo = [
-    {
-        autor: "Ana Martínez",
-        tiempo: "Hace 5 minutos",
-        contenido: "¡Logré configurar mi Service Worker con estrategia Cache First! 🚀",
-        avatar: "A"
-    },
-    {
-        autor: "Carlos López",
-        tiempo: "Hace 15 minutos",
-        contenido: "Probando el renderizado dinámico en el cliente para el App Shell de DevConnect.",
-        avatar: "C"
+document.addEventListener('DOMContentLoaded', () => {
+    const formulario = document.getElementById('form-post');
+    
+    // 1. Cargar y renderizar posts guardados en IndexedDB al abrir la app
+    cargarYRenderizarPosts();
+
+    // 2. Escuchar la creación de nuevos elementos
+    if (formulario) {
+        formulario.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const textoInput = document.getElementById('input-contenido').value;
+            if (!textoInput.trim()) return;
+
+            // Objeto nuevo con ID único basado en timestamp
+            const nuevoPost = {
+                id: Date.now().toString(),
+                autor: 'Desarrollador Local',
+                contenido: textoInput,
+                fecha: new Date().toLocaleTimeString()
+            };
+
+            // Guardamos en IndexedDB (Funciona 100% Offline)
+            await guardarPost(nuevoPost);
+            
+            // Limpiamos el formulario y actualizamos la pantalla
+            formulario.reset();
+            await cargarYRenderizarPosts();
+        });
     }
-];
-
-// Función para renderizar tarjetas HTML en el DOM (Client-Side Rendering)
-function renderizarFeed(posts) {
-    const contenedorFeed = document.getElementById('feed');
-    if (!contenedorFeed) return;
-
-    // Limpiamos el contenedor (o quitamos el spinner de carga)
-    contenedorFeed.innerHTML = '';
-// Generamos el HTML dinámicamente
-posts.forEach(post => {
-    const tarjetaHTML = `
-        <article class="bg-white p-4 rounded-lg shadow mb-4 animate-fade-in">
-            <div class="flex items-center mb-3">
-                <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-3">
-                    ${post.avatar}
-                </div>
-                <div>
-                    <h2 class="font-bold text-gray-800">${post.autor}</h2>
-                    <p class="text-xs text-gray-500">${post.tiempo}</p>
-                </div>
-            </div>
-            <p class="text-gray-700">${post.contenido}</p>
-        </article>
-    `;
-    contenedorFeed.innerHTML += tarjetaHTML;
 });
+
+// Función para leer desde IndexedDB y pintar en la pantalla 
+async function cargarYRenderizarPosts() { 
+    const feedContainer = document.getElementById('feed'); 
+    if (!feedContainer) return;
+
+    // Leemos directamente de la base de datos del navegador
+    const posts = await obtenerPosts();
+    feedContainer.innerHTML = '';
+
+    if (posts.length === 0) {
+        feedContainer.innerHTML = '<p class="text-center text-gray-500 py-4">No hay publicaciones locales.</p>';
+        return;
+    }
+
+    // Pintamos los registros guardados
+    posts.forEach(post => {
+        feedContainer.innerHTML += `
+            <article class="bg-white p-4 rounded-lg shadow mb-4 flex justify-between items-start">
+                <div>
+                    <div class="flex items-center mb-1">
+                        <span class="font-bold text-gray-800 text-sm mr-2">${post.autor}</span>
+                        <span class="text-xs text-gray-400">${post.tiempo}</span>
+                    </div>
+                    <p class="text-gray-700">${post.contenido}</p>
+                </div>
+                <button onclick="borrarPostHandler('${post.id}')" class="text-red-500 hover:text-red-700 text-xs p-1">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </article>
+        `;
+    });
 }
-// Ejecutamos el renderizado cuando el DOM esté listo 
-document.addEventListener('DOMContentLoaded', () => { renderizarFeed(postsDeEjemplo); });
+
+// Handler global para eliminar un registro 
+async function borrarPostHandler(id) { 
+    await eliminarPost(id); 
+    await cargarYRenderizarPosts(); 
+}

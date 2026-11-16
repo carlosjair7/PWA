@@ -11,27 +11,25 @@ const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
     }
 });
 
-// Insertar o Actualizar un registro
-async function guardarEnIndexedDB(tabla, objeto) {
-    const db = await dbPromise;
-    const tx = db.transaction(tabla, 'readwrite');
-    const store = tx.objectStore(tabla);
-    await store.put(objeto);
+// C - CREATE / UPDATE: Guardar un post en IndexedDB 
+async function guardarPost(post) { 
+    const db = await dbPromise; 
+    const tx = db.transaction(STORE_NAME, 'readwrite'); 
+    await tx.objectStore(STORE_NAME).put(post); 
     await tx.done;
-    return objeto;
+    console.log('[DB] Post guardado en IndexedDB:', post.id); 
 }
 
-// Obtener todos los registros de una tabla
-async function obtenerDeIndexedDB(tabla) {
-    const db = await dbPromise;
-    return await db.getAll(tabla);
+// R - READ: Obtener todos los posts guardados 
+async function obtenerPosts() { 
+    const db = await dbPromise; 
+    return await db.getAll(STORE_NAME); 
 }
 
-// Borrar un registro por su ID
-async function borrarDeIndexedDB(tabla, id) {
-    const db = await dbPromise;
-    const tx = db.transaction(tabla, 'readwrite');
-    const store = tx.objectStore(tabla);
-    await store.delete(id);
-    await tx.done;
+// D - DELETE: Eliminar un post por su ID 
+async function eliminarPost(id) { 
+    const db = await dbPromise; 
+    const tx = db.transaction(STORE_NAME, 'readwrite'); 
+    await tx.objectStore(STORE_NAME).delete(id); 
+    await tx.done; console.log('[DB] Post eliminado de IndexedDB:', id); 
 }
